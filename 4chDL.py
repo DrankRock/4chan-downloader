@@ -1,6 +1,9 @@
 import requests, re, os, sys, getopt
 from bs4 import BeautifulSoup
 
+def help():
+	print("hello there !")
+
 # Print iterations progress
 # Source : https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
 def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
@@ -24,7 +27,7 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
     if iteration == total: 
         print()
 
-def Main(url):
+def Main(url, isSingle, singleFolderName):
 	#re.sub("[^a-zA-Z]+", "", "ABC12abc345def")
 	#<div class="fileText"
 	page = requests.get(url)
@@ -33,8 +36,11 @@ def Main(url):
 	name = name[1]
 	name = re.search('>(.*)<', str(name))
 	name = name.group(1)
-	foldername = re.sub("[^a-zA-Z]+", "", str(name))
 	listOfLinksToDownload = soup.find_all("div", class_="fileText")
+
+	foldername = re.sub("[^a-zA-Z0-9]+", "", str(name))
+	if isSingle:
+		foldername=singleFolderName
 	os.makedirs(foldername, exist_ok=True)
 	lth = len(listOfLinksToDownload)
 	for i in range(lth):
@@ -44,11 +50,24 @@ def Main(url):
 	printProgressBar(lth, lth, prefix = 'Progress:', suffix = 'Complete', length = 25)
 	#<a href="//
 
+def ifList(listfile, isSingle, singleFolderName):
+	fileIn = open(listfile, 'r')
+	Lines = fileIn.readlines()
+	nline = len(Lines)
+	i=1
+	for line in Lines:
+		print("[{}/{}] - Getting Files from {}".format(i,nline,line))
+		Main(line, isSingle, singleFolderName)
+		i+=1
+
+
+
 def downloadFileFromURL(folder, url):
+	folderToUse = folder
 	splitted_URL = url.split("/")
 	filename = splitted_URL[2]
 	fileDir = os.path.dirname(os.path.realpath('__file__'))
-	fileWfolder = "{}/{}".format(folder, filename)
+	fileWfolder = "{}/{}".format(folderToUse, filename)
 	filename = os.path.join(fileDir, fileWfolder)
 
 	#print("folder : {}, url : {}, filename : {}, filedir : {}".format(folder, url, filename, fileDir))
@@ -59,21 +78,29 @@ def downloadFileFromURL(folder, url):
 def main(argv):
 	# credit : https://www.tutorialspoint.com/python/python_command_line_arguments.htm
 	try:
-		opts, args = getopt.getopt(argv,"u:l",["url=","list="])
-	except getopt.GetoptError:
-		print ('usage')
+		opts, args = getopt.getopt(argv,"hu:l:sf:",["url=","list=","single-folder="])
+	except getopt.GetoptError as err:
+		print ('usage : ',err)
 		sys.exit(2)
-	useURL=False
 	useList=False
 	for opt, arg in opts:
 		if opt in ("-u", "--url"):
 			url = arg
-			useURL=True
 		elif opt in ("-l", "--list"):
-			#Please note that list is currently not supported, it would take 10 minutes to do i'll do later.
 			listOfLinks=arg
 			useList=True
-	Main(url)
+		elif opt in ("-sf", "--single-folder"):
+			singleFolder=True
+			singleFolderName=arg
+		elif opt in ("-h", "--help"):
+			help()
+			sys.exit(2)
+			
+
+	if useList:
+		ifList(listOfLinks, singleFolder, singleFolderName)
+	else:
+		Main(url, singleFolder, singleFolderName)
 
 if __name__ == "__main__":
    main(sys.argv[1:])
