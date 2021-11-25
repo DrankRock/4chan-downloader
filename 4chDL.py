@@ -1,8 +1,32 @@
 import requests, re, os, sys, getopt
 from bs4 import BeautifulSoup
 
+## TODO :
+# Help function
+# the possibility to give a full categroy and some keywords to download threads automatically.
+
+
+COLOR = {
+    "BLUE": "\033[94m",
+    "GREEN": "\033[92m",
+    "RED": "\033[91m",
+    "ENDC": "\033[0m",
+    "BOLD": "\033[1m"
+}
 def help():
-	print("hello there !")
+	print(COLOR["BOLD"], "Usage : ", COLOR["ENDC"], "python 4chDL.py <params>")
+	print(" Download all files posted by users (.gif, .png, .jpg, .webm) in a or multiple threads.")
+	print(" For each threads, a folder is created, unless -sf is specified.")
+	print(COLOR["BOLD"], "Parameters :", COLOR["ENDC"])
+	print(COLOR["BOLD"], "     -u, --url <url>", COLOR["ENDC"])
+	print("          downloads all files in the thread at <url>.\n")
+	print(COLOR["BOLD"], "     -l, --list <file>", COLOR["ENDC"])
+	print("          downloads all files in the threads contained in the file,")
+	print("          with one link per line.\n")
+	print(COLOR["BOLD"], "     -sf, --single-folder <folder name>", COLOR["ENDC"])
+	print("          specify an output folder to put ALL downloaded files.\n")
+	print(COLOR["BOLD"], "     -h, --help", COLOR["ENDC"])
+	print("          shows this help")
 
 # Print iterations progress
 # Source : https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
